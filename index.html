@@ -318,7 +318,9 @@
 </head>
 <body>
 
+    <!-- SÜRTÜNMESİZ GİRİŞ / KAYIT EKRANI (AUTH OVERLAY) -->
     <div id="auth-screen">
+        <!-- Giriş Paneli -->
         <div class="auth-box" id="login-box">
             <h1>Lotus AI 🪷</h1>
             <p>Yapay zeka ameliyathanesine adım atın</p>
@@ -329,6 +331,7 @@
             <button class="auth-switch" onclick="toggleAuthMode('register')">Hesabınız yok mu? Kayıt Olun</button>
         </div>
 
+        <!-- Kayıt Paneli -->
         <div class="auth-box" id="register-box" style="display: none;">
             <h1>Lotus AI 🪷</h1>
             <p>Yeni bir Lotus zihni oluşturun</p>
@@ -341,10 +344,12 @@
         </div>
     </div>
 
+    <!-- ANA UYGULAMA ARAYÜZÜ -->
     <div class="sidebar">
         <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Sohbet</button>
         <ul class="chat-history" id="chat-history"></ul>
         
+        <!-- ChatGPT Tarzı Alt Profil Alanı -->
         <div class="user-profile">
             <div class="user-info">
                 <span>🪷</span>
@@ -370,7 +375,8 @@
     </div>
 
     <script>
-        const API_BASE_URL = "https://landlord-rekindle-wispy.ngrok-free.dev"; // İnternete çıkarken bu domain güncellenecek
+        // DİKKAT: Buraya kendi güncel Ngrok linkini yazmalısın!
+        const API_BASE_URL = "https://landlord-rekindle-wispy.ngrok-free.dev"; 
 
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
@@ -399,7 +405,6 @@
             const name = localStorage.getItem("lotus_user_name");
             
             if (token) {
-                // Token varsa auth ekranını hissettirmeden kapat ve verileri yükle
                 authScreen.style.opacity = '0';
                 authScreen.style.visibility = 'hidden';
                 userDisplayName.textContent = name || "Kullanıcı";
@@ -421,7 +426,7 @@
             }
         }
 
-        // --- GİRİŞ YAPMA İŞLEMİ (FastAPI + MongoDB bağlantılı) ---
+        // --- GİRİŞ YAPMA İŞLEMİ ---
         async function handleLogin() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
@@ -438,14 +443,16 @@
                 loginBtn.disabled = true;
                 loginBtn.textContent = "Giriş Yapılıyor...";
                 
-                // FastAPI OAuth2 standardına uygun x-www-form-urlencoded isteği
                 const formData = new URLSearchParams();
-                formData.append('username', email); // OAuth2 'username' alanı e-posta kabul eder
+                formData.append('username', email);
                 formData.append('password', password);
 
                 const response = await fetch(`${API_BASE_URL}/token`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
+                    },
                     body: formData
                 });
 
@@ -455,16 +462,13 @@
                     throw new Error(data.detail || "Giriş başarısız oldu.");
                 }
 
-                // Verileri tarayıcı hafızasına kaydet
                 localStorage.setItem("lotus_token", data.access_token);
                 localStorage.setItem("lotus_user_name", data.user_name);
                 userDisplayName.textContent = data.user_name;
 
-                // Giriş ekranını pürüzsüzce kapat
                 authScreen.style.opacity = '0';
                 setTimeout(() => authScreen.style.visibility = 'hidden', 400);
 
-                // Kullanıcının MongoDB'deki eski sohbet listesini çek
                 loadUserChatHistory();
                 startNewChat();
 
@@ -477,7 +481,7 @@
             }
         }
 
-        // --- KAYIT OLMA İŞLEMİ (FastAPI + MongoDB bağlantılı) ---
+        // --- KAYIT OLMA İŞLEMİ ---
         async function handleRegister() {
             const name = document.getElementById('reg-name').value.trim();
             const email = document.getElementById('reg-email').value.trim();
@@ -497,7 +501,10 @@
 
                 const response = await fetch(`${API_BASE_URL}/register`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
+                    },
                     body: JSON.stringify({ name, email, password })
                 });
 
@@ -531,7 +538,6 @@
                     <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
                 </div>
             `;
-            // Giriş ekranını geri getir
             authScreen.style.visibility = 'visible';
             authScreen.style.opacity = '1';
             document.getElementById('login-password').value = "";
@@ -544,7 +550,10 @@
 
             try {
                 const response = await fetch(`${API_BASE_URL}/chats`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
+                    }
                 });
                 if (!response.ok) return;
 
@@ -572,7 +581,10 @@
                 chatContainer.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.6;'>Sohbet yükleniyor...</div>";
                 
                 const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
+                    }
                 });
                 if (!response.ok) throw new Error();
 
@@ -581,11 +593,9 @@
                 currentChatId = chatId;
                 isNewChat = false;
 
-                // Sol menü aktiflik sınıflarını güncelle
                 document.querySelectorAll('.chat-history li').forEach(li => li.classList.remove('active'));
                 if (liElement) liElement.classList.add('active');
 
-                // Mesajları ekrana bas (Mesaj formatı backend şemasına göredir)
                 data.messages.forEach(msg => {
                     if (msg.role === "user") {
                         addMessage("Sen", msg.content, "user-message");
@@ -625,7 +635,6 @@
                 return;
             }
 
-            // Eğer yeni bir sohbetin ilk mesajıysa ön yüzde geçici bir başlık aç
             let temporaryLi = null;
             if (isNewChat) {
                 chatContainer.innerHTML = ""; 
@@ -649,22 +658,21 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     },
                     body: JSON.stringify({ 
                         message: text,
-                        chat_id: currentChatId // Mevcut sohbet id'sini gönderir (null ise backend yeni üretir)
+                        chat_id: currentChatId
                     })
                 });
 
                 if (!response.ok) throw new Error("Sunucu hatası veya yetki süresi doldu.");
 
-                // ChatGPT mimarisi: Yeni sohbet ID'sini sunucu özel HTTP Header alanından (X-Chat-ID) okur
                 const serverChatId = response.headers.get('X-Chat-ID');
                 if (serverChatId && isNewChat) {
                     currentChatId = serverChatId;
                     isNewChat = false;
-                    // Geçici sol liste elemanını gerçek ID ile ilişkilendir
                     temporaryLi.id = `sidebar-chat-${serverChatId}`;
                     temporaryLi.onclick = () => loadSpecificChat(serverChatId, temporaryLi);
                 }
