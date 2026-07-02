@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotus AI 0.1a</title>
+    <style>
+        :root {
+            --bg-color: #F4F0F9;
+            --sidebar-bg: #EBE4F4;
+            --chat-bg: #FFFFFF;
+            --text-color: #4A3B52;
+            --accent-color: #D1C4E9;
+            --hover-color: #B39CD0;
+            --lotus-text: #7E57C2;
+            --user-text: #5E35B1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            height: 100vh;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* --- GİRİŞ / KAYIT EKRANI (Auth Screen) --- */
+        #auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .auth-box h1 {
+            font-size: 36px;
+            color: var(--user-text);
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .auth-box p {
+            color: #6c63ff;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid var(--sidebar-bg);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+            background-color: #FAF9FC;
+            color: var(--text-color);
+        }
+
+        .auth-input:focus {
+            border-color: var(--hover-color);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--lotus-text);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--user-text);
+        }
+
+        .auth-switch {
+            background: none;
+            border: none;
+            color: var(--lotus-text);
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .auth-error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+            text-align: left;
+        }
+
+        /* --- SOL PANEL (Sidebar) --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .new-chat-btn {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: var(--hover-color);
+            color: #FFFFFF;
+        }
+
+        .chat-history {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .chat-history li {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-history li:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .chat-history li.active {
+            background-color: var(--hover-color);
+            color: #FFFFFF;
+        }
+
+        /* Sol Panel Profil Alanı */
+        .user-profile {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 13px;
+            opacity: 0.7;
+            text-decoration: underline;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .logout-btn:hover {
+            opacity: 1;
+            color: #d32f2f;
+        }
+
+        /* --- ANA İÇERİK --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 850px;
+            flex: 1;
+            padding: 0 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message-bubble {
+            background-color: var(--chat-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.5;
+            max-width: 85%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            border-color: var(--user-text);
+        }
+
+        .user-message strong { color: var(--user-text); }
+        .lotus-message strong { color: var(--lotus-text); }
+
+        /* Scrollbar Ayarları */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--hover-color); }
+
+        /* --- GİRİŞ ALANI --- */
+        .input-container {
+            width: 100%;
+            max-width: 850px;
+            padding: 20px 20px 30px 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-box {
+            flex: 1;
+            background-color: var(--chat-bg);
+            color: var(--text-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .input-box:focus {
+            border-color: var(--hover-color);
+        }
+
+        .send-btn {
+            background-color: var(--lotus-text);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            padding: 0 25px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover { background-color: var(--user-text); }
+        .send-btn:disabled {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            cursor: not-allowed;
+        }
+
+        .blinking-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="auth-box" id="login-box">
+            <h1>Lotus AI 🪷</h1>
+            <p>Yapay zeka ameliyathanesine adım atın</p>
+            <div class="auth-error" id="login-error"></div>
+            <input type="email" id="login-email" class="auth-input" placeholder="E-posta adresi" autocomplete="email">
+            <input type="password" id="login-password" class="auth-input" placeholder="Şifre">
+            <button class="auth-btn" id="login-btn" onclick="handleLogin()">Giriş Yap</button>
+            <button class="auth-switch" onclick="toggleAuthMode('register')">Hesabınız yok mu? Kayıt Olun</button>
+        </div>
+
+        <div class="auth-box" id="register-box" style="display: none;">
+            <h1>Lotus AI 🪷</h1>
+            <p>Yeni bir Lotus zihni oluşturun</p>
+            <div class="auth-error" id="register-error"></div>
+            <input type="text" id="reg-name" class="auth-input" placeholder="Ad Soyad" autocomplete="name">
+            <input type="email" id="reg-email" class="auth-input" placeholder="E-posta adresi" autocomplete="email">
+            <input type="password" id="reg-password" class="auth-input" placeholder="Güçlü bir şifre">
+            <button class="auth-btn" id="register-btn" onclick="handleRegister()">Kayıt Ol</button>
+            <button class="auth-switch" onclick="toggleAuthMode('login')">Zaten hesabınız var mı? Giriş Yapın</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Sohbet</button>
+        <ul class="chat-history" id="chat-history"></ul>
+        
+        <div class="user-profile">
+            <div class="user-info">
+                <span>🪷</span>
+                <span id="user-display-name">Yükleniyor...</span>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Çıkış Yap</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">Lotus AI 🪷</div>
+        
+        <div class="chat-container" id="chat-container">
+            <div class="message-bubble lotus-message">
+                <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" id="user-input" class="input-box" placeholder="Lotus'a bir mesaj gönder..." autocomplete="off">
+            <button id="send-btn" class="send-btn" onclick="sendMessage()">Gönder</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "https://landlord-rekindle-wispy.ngrok-free.dev"; // İnternete çıkarken bu domain güncellenecek
+
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const authScreen = document.getElementById('auth-screen');
+        const loginBox = document.getElementById('login-box');
+        const registerBox = document.getElementById('register-box');
+        const userDisplayName = document.getElementById('user-display-name');
+
+        // --- SOHBET STATE YÖNETİMİ ---
+        let currentChatId = null; 
+        let isNewChat = true; 
+
+        // Enter tuşu dinleyicisi
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // --- SAYFA YÜKLENDİĞİNDE AUTH KONTROLÜ ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("lotus_token");
+            const name = localStorage.getItem("lotus_user_name");
+            
+            if (token) {
+                // Token varsa auth ekranını hissettirmeden kapat ve verileri yükle
+                authScreen.style.opacity = '0';
+                authScreen.style.visibility = 'hidden';
+                userDisplayName.textContent = name || "Kullanıcı";
+                loadUserChatHistory();
+            } else {
+                userDisplayName.textContent = "Giriş Yapılmadı";
+            }
+        });
+
+        function toggleAuthMode(mode) {
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('register-error').style.display = 'none';
+            if (mode === 'register') {
+                loginBox.style.display = 'none';
+                registerBox.style.display = 'block';
+            } else {
+                registerBox.style.display = 'none';
+                loginBox.style.display = 'block';
+            }
+        }
+
+        // --- GİRİŞ YAPMA İŞLEMİ (FastAPI + MongoDB bağlantılı) ---
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
+
+            if (!email || !password) {
+                errorDiv.textContent = "Lütfen tüm alanları doldurun.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                loginBtn.disabled = true;
+                loginBtn.textContent = "Giriş Yapılıyor...";
+                
+                // FastAPI OAuth2 standardına uygun x-www-form-urlencoded isteği
+                const formData = new URLSearchParams();
+                formData.append('username', email); // OAuth2 'username' alanı e-posta kabul eder
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE_URL}/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Giriş başarısız oldu.");
+                }
+
+                // Verileri tarayıcı hafızasına kaydet
+                localStorage.setItem("lotus_token", data.access_token);
+                localStorage.setItem("lotus_user_name", data.user_name);
+                userDisplayName.textContent = data.user_name;
+
+                // Giriş ekranını pürüzsüzce kapat
+                authScreen.style.opacity = '0';
+                setTimeout(() => authScreen.style.visibility = 'hidden', 400);
+
+                // Kullanıcının MongoDB'deki eski sohbet listesini çek
+                loadUserChatHistory();
+                startNewChat();
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Giriş Yap";
+            }
+        }
+
+        // --- KAYIT OLMA İŞLEMİ (FastAPI + MongoDB bağlantılı) ---
+        async function handleRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const errorDiv = document.getElementById('register-error');
+            const regBtn = document.getElementById('register-btn');
+
+            if (!name || !email || !password) {
+                errorDiv.textContent = "Lütfen tüm alanları eksiksiz doldurun.";
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                regBtn.disabled = true;
+                regBtn.textContent = "Hesap Oluşturuluyor...";
+
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Kayıt işlemi başarısız.");
+                }
+
+                alert("Hesabınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
+                toggleAuthMode('login');
+                document.getElementById('login-email').value = email;
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                regBtn.disabled = false;
+                regBtn.textContent = "Kayıt Ol";
+            }
+        }
+
+        // --- GÜVENLİ ÇIKIŞ YAPMA ---
+        function handleLogout() {
+            localStorage.clear();
+            currentChatId = null;
+            isNewChat = true;
+            chatHistory.innerHTML = "";
+            chatContainer.innerHTML = `
+                <div class="message-bubble lotus-message">
+                    <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+                </div>
+            `;
+            // Giriş ekranını geri getir
+            authScreen.style.visibility = 'visible';
+            authScreen.style.opacity = '1';
+            document.getElementById('login-password').value = "";
+        }
+
+        // --- MONGODB'DEN SOHBET GEÇMİŞİNİ YÜKLEME ---
+        async function loadUserChatHistory() {
+            const token = localStorage.getItem("lotus_token");
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+
+                const chats = await response.json();
+                chatHistory.innerHTML = "";
+
+                chats.forEach(chat => {
+                    const li = document.createElement("li");
+                    li.textContent = chat.title || "Eski Sohbet";
+                    li.id = `sidebar-chat-${chat.id}`;
+                    li.onclick = () => loadSpecificChat(chat.id, li);
+                    chatHistory.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Geçmiş yüklenirken hata oluştu:", e);
+            }
+        }
+
+        // --- BELİRLİ BİR SOHBETİN DETAYLARINI EKRANA BASMA ---
+        async function loadSpecificChat(chatId, liElement) {
+            const token = localStorage.getItem("lotus_token");
+            if (!token) return;
+
+            try {
+                chatContainer.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.6;'>Sohbet yükleniyor...</div>";
+                
+                const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+                chatContainer.innerHTML = "";
+                currentChatId = chatId;
+                isNewChat = false;
+
+                // Sol menü aktiflik sınıflarını güncelle
+                document.querySelectorAll('.chat-history li').forEach(li => li.classList.remove('active'));
+                if (liElement) liElement.classList.add('active');
+
+                // Mesajları ekrana bas (Mesaj formatı backend şemasına göredir)
+                data.messages.forEach(msg => {
+                    if (msg.role === "user") {
+                        addMessage("Sen", msg.content, "user-message");
+                    } else {
+                        addMessage("Lotus", msg.content.replace(/\n/g, '<br>'), "lotus-message");
+                    }
+                });
+
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            } catch (err) {
+                chatContainer.innerHTML = "<span style='color:red;'>[Sohbet yüklenemedi.]</span>";
+            }
+        }
+
+        function startNewChat() {
+            chatContainer.innerHTML = `
+                <div class="message-bubble lotus-message">
+                    <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+                </div>
+            `;
+            isNewChat = true;
+            currentChatId = null;
+            userInput.value = "";
+            document.querySelectorAll('.chat-history li').forEach(li => li.classList.remove('active'));
+            userInput.focus();
+        }
+
+        // --- MESAJA CEVAP VERME VE STREAM ALANI ---
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            const token = localStorage.getItem("lotus_token");
+
+            if (!text) return;
+            if (!token) {
+                handleLogout();
+                return;
+            }
+
+            // Eğer yeni bir sohbetin ilk mesajıysa ön yüzde geçici bir başlık aç
+            let temporaryLi = null;
+            if (isNewChat) {
+                chatContainer.innerHTML = ""; 
+                const title = text.split(" ").slice(0, 4).join(" ") + "...";
+                temporaryLi = document.createElement("li");
+                temporaryLi.textContent = title;
+                temporaryLi.classList.add('active');
+                chatHistory.prepend(temporaryLi);
+            }
+
+            addMessage("Sen", text, "user-message");
+            userInput.value = "";
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Düşünüyor...";
+
+            const responseContainer = addMessage("Lotus", "<span class='blinking-cursor'></span>", "lotus-message");
+            const textNode = responseContainer.querySelector('.message-content');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        message: text,
+                        chat_id: currentChatId // Mevcut sohbet id'sini gönderir (null ise backend yeni üretir)
+                    })
+                });
+
+                if (!response.ok) throw new Error("Sunucu hatası veya yetki süresi doldu.");
+
+                // ChatGPT mimarisi: Yeni sohbet ID'sini sunucu özel HTTP Header alanından (X-Chat-ID) okur
+                const serverChatId = response.headers.get('X-Chat-ID');
+                if (serverChatId && isNewChat) {
+                    currentChatId = serverChatId;
+                    isNewChat = false;
+                    // Geçici sol liste elemanını gerçek ID ile ilişkilendir
+                    temporaryLi.id = `sidebar-chat-${serverChatId}`;
+                    temporaryLi.onclick = () => loadSpecificChat(serverChatId, temporaryLi);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                textNode.innerHTML = ""; 
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    textNode.innerHTML += chunk.replace(/\n/g, '<br>'); 
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            } catch (error) {
+                textNode.innerHTML = `<span style='color:red;'>[Sistem Hatası: ${error.message}]</span>`;
+                if (isNewChat && temporaryLi) temporaryLi.remove();
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Gönder";
+                userInput.focus();
+            }
+        }
+
+        function addMessage(sender, text, className) {
+            const bubble = document.createElement("div");
+            bubble.className = `message-bubble ${className}`;
+            bubble.innerHTML = `<strong>${sender}:</strong> <span class="message-content">${text}</span>`;
+            chatContainer.appendChild(bubble);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return bubble;
+        }
+    </script>
+</body>
+</html>
