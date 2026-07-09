@@ -3,184 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotus AI 0.1a</title>
+    <title>Ouirelle AI 0.1a</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #F4F0F9;
-            --sidebar-bg: #EBE4F4;
-            --chat-bg: #FFFFFF;
-            --text-color: #4A3B52;
-            --accent-color: #D1C4E9;
-            --hover-color: #B39CD0;
-            --lotus-text: #7E57C2;
-            --user-text: #5E35B1;
+            /* Yumuşak Altın & Berrak Beyaz paleti */
+            --bg:            #FAF6EC;  /* sıcak krem zemin */
+            --surface:       #FFFFFF;  /* berrak beyaz kart */
+            --sidebar-bg:    #F5EEDC;  /* açık altın kenar çubuğu */
+            --ink:           #3B3220;  /* koyu sıcak metin */
+            --ink-soft:      #8A7A57;  /* soluk altın ikincil metin */
+            --line:          #ECE2CC;  /* yumuşak altın çizgi */
+            --primary:       #C6A15B;  /* yumuşak altın */
+            --primary-deep:  #A8823D;  /* koyu altın */
+            --primary-soft:  #F6EFDD;  /* çok açık altın yıkama */
+            --ouirelle-text: #A8823D;  /* asistan ismi rengi */
+            --user-text:     #6B5A34;  /* kullanıcı ismi rengi */
+            --danger:        #C0563C;
+            --radius:        16px;
+            --shadow:        0 4px 20px rgba(120, 95, 40, 0.08);
+            --shadow-lg:     0 18px 55px rgba(90, 65, 20, 0.18);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
             display: flex;
             height: 100vh;
-            color: var(--text-color);
+            color: var(--ink);
             overflow: hidden;
+        }
+
+        button { font-family: inherit; }
+        input { font-family: inherit; color: var(--ink); }
+
+        /* Altın gradyanlı logo yazısı */
+        .brand-mark {
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            background: linear-gradient(120deg, #C6A15B, #E6C878, #B8860B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            user-select: none;
+            white-space: nowrap;
         }
 
         /* --- GİRİŞ / KAYIT EKRANI (Auth Screen) --- */
         #auth-screen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #FFFFFF;
+            inset: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 16px;
             z-index: 1000;
+            background:
+                radial-gradient(900px 560px at 18% 8%, #F4DCA0 0%, transparent 55%),
+                radial-gradient(820px 560px at 86% 92%, #E9C77A 0%, transparent 52%),
+                #F4EBD6;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
         .auth-box {
             width: 100%;
-            max-width: 400px;
-            padding: 40px;
+            max-width: 380px;
+            padding: 40px 36px;
             text-align: center;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
         }
 
-        .auth-box h1 {
-            font-size: 36px;
-            color: var(--user-text);
-            margin-bottom: 10px;
-            font-weight: 800;
+        .auth-box .brand-mark {
+            font-size: 34px;
+            display: inline-block;
+            margin-bottom: 8px;
         }
 
         .auth-box p {
-            color: #6c63ff;
-            margin-bottom: 30px;
-            font-size: 15px;
+            color: var(--ink-soft);
+            margin-bottom: 26px;
+            font-size: 14px;
         }
 
         .auth-input {
             width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid var(--sidebar-bg);
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 13px 15px;
+            margin-bottom: 12px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            font-size: 15px;
             outline: none;
-            transition: border-color 0.2s;
-            background-color: #FAF9FC;
-            color: var(--text-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: var(--surface);
         }
 
         .auth-input:focus {
-            border-color: var(--hover-color);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-soft);
         }
 
         .auth-btn {
             width: 100%;
-            padding: 15px;
-            background-color: var(--lotus-text);
-            color: white;
+            padding: 13px;
+            background-color: var(--primary);
+            color: #fff;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-bottom: 15px;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 6px;
+            margin-bottom: 10px;
         }
 
-        .auth-btn:hover {
-            background-color: var(--user-text);
-        }
+        .auth-btn:hover { background-color: var(--primary-deep); }
+        .auth-btn:active { transform: scale(0.98); }
 
         .auth-switch {
             background: none;
             border: none;
-            color: var(--lotus-text);
+            color: var(--primary-deep);
             font-size: 14px;
             cursor: pointer;
-            text-decoration: underline;
+            font-weight: 600;
         }
+        .auth-switch:hover { text-decoration: underline; }
 
         .auth-error {
-            color: #d32f2f;
-            background-color: #ffebee;
-            padding: 10px;
-            border-radius: 6px;
+            color: var(--danger);
+            background-color: #FBEDE8;
+            padding: 10px 12px;
+            border-radius: 10px;
             font-size: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             display: none;
             text-align: left;
         }
 
         /* --- SOL PANEL (Sidebar) --- */
         .sidebar {
-            width: 260px;
+            width: 268px;
             background-color: var(--sidebar-bg);
-            padding: 20px 15px;
+            border-right: 1px solid var(--line);
+            padding: 18px 14px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
             height: 100%;
         }
 
+        .sidebar-brand {
+            font-family: 'Sora', sans-serif;
+            font-size: 20px;
+            padding: 6px 8px 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .new-chat-btn {
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            border: none;
-            border-radius: 8px;
+            background-color: var(--surface);
+            color: var(--primary-deep);
+            border: 1px solid var(--line);
+            border-radius: 999px;
             padding: 12px;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            box-shadow: var(--shadow);
         }
 
         .new-chat-btn:hover {
-            background-color: var(--hover-color);
-            color: #FFFFFF;
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
         }
 
         .chat-history {
             list-style: none;
             overflow-y: auto;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .chat-history li {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 5px;
+            padding: 11px 12px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: background 0.2s, color 0.2s;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .chat-history li:hover {
-            background-color: var(--accent-color);
-        }
-        
+        .chat-history li:hover { background-color: var(--primary-soft); }
+
         .chat-history li.active {
-            background-color: var(--hover-color);
-            color: #FFFFFF;
+            background-color: var(--primary);
+            color: #fff;
         }
 
         /* Sol Panel Profil Alanı */
         .user-profile {
             margin-top: auto;
-            padding-top: 15px;
-            border-top: 1px solid var(--accent-color);
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -192,24 +234,26 @@
             align-items: center;
             gap: 8px;
             font-weight: 600;
-            color: var(--text-color);
+            color: var(--ink);
+            min-width: 0;
+        }
+        .user-info span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .logout-btn {
             background: none;
             border: none;
-            color: var(--text-color);
+            color: var(--ink-soft);
             cursor: pointer;
             font-size: 13px;
-            opacity: 0.7;
-            text-decoration: underline;
-            transition: opacity 0.2s, color 0.2s;
+            font-weight: 600;
+            transition: color 0.2s;
+            flex-shrink: 0;
         }
-
-        .logout-btn:hover {
-            opacity: 1;
-            color: #d32f2f;
-        }
+        .logout-btn:hover { color: var(--danger); }
 
         /* --- ANA İÇERİK --- */
         .main-content {
@@ -222,137 +266,159 @@
 
         .header {
             width: 100%;
-            max-width: 850px;
             text-align: center;
-            padding: 20px;
+            padding: 16px;
             font-size: 20px;
-            font-weight: bold;
+            position: sticky;
+            top: 0;
+            background: rgba(250, 246, 236, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+            z-index: 10;
         }
+        .header .brand-mark { font-size: 22px; }
 
         .chat-container {
             width: 100%;
             max-width: 850px;
             flex: 1;
-            padding: 0 20px;
+            padding: 24px 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
         }
 
         .message-bubble {
-            background-color: var(--chat-bg);
-            border: 1px solid var(--accent-color);
-            border-radius: 12px;
-            padding: 20px;
-            line-height: 1.5;
+            background-color: var(--surface);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            line-height: 1.6;
             max-width: 85%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            box-shadow: var(--shadow);
             word-wrap: break-word;
+            font-size: 15px;
+        }
+
+        .ouirelle-message {
+            align-self: flex-start;
+            border-left: 3px solid var(--primary);
         }
 
         .user-message {
             align-self: flex-end;
-            border-color: var(--user-text);
+            background-color: var(--primary-soft);
         }
 
         .user-message strong { color: var(--user-text); }
-        .lotus-message strong { color: var(--lotus-text); }
+        .ouirelle-message strong { color: var(--ouirelle-text); }
+        .message-bubble strong {
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+        }
 
         /* Scrollbar Ayarları */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); }
-        ::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--hover-color); }
+        ::-webkit-scrollbar { width: 9px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
         /* --- GİRİŞ ALANI --- */
         .input-container {
             width: 100%;
             max-width: 850px;
-            padding: 20px 20px 30px 20px;
+            padding: 14px 20px 26px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
 
         .input-box {
             flex: 1;
-            background-color: var(--chat-bg);
-            color: var(--text-color);
-            border: 2px solid var(--accent-color);
-            border-radius: 8px;
-            padding: 15px;
+            background-color: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 14px 20px;
             font-size: 15px;
             outline: none;
-            transition: border 0.2s;
+            transition: border 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
         }
 
         .input-box:focus {
-            border-color: var(--hover-color);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-soft);
         }
 
         .send-btn {
-            background-color: var(--lotus-text);
-            color: #FFFFFF;
+            background-color: var(--primary);
+            color: #fff;
             border: none;
-            border-radius: 8px;
-            padding: 0 25px;
+            border-radius: 999px;
+            padding: 0 28px;
             font-size: 15px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .send-btn:hover { background-color: var(--user-text); }
+        .send-btn:hover { background-color: var(--primary-deep); }
+        .send-btn:active { transform: scale(0.98); }
         .send-btn:disabled {
-            background-color: var(--accent-color);
-            color: var(--text-color);
+            background-color: var(--line);
+            color: var(--ink-soft);
             cursor: not-allowed;
         }
 
         .blinking-cursor::after {
             content: '|';
             animation: blink 1s step-end infinite;
+            color: var(--primary);
         }
         @keyframes blink { 50% { opacity: 0; } }
+
+        @media (max-width: 720px) {
+            .sidebar { width: 220px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- SÜRTÜNMESİZ GİRİŞ / KAYIT EKRANI (AUTH OVERLAY) -->
+    <!-- GİRİŞ / KAYIT EKRANI (AUTH OVERLAY) -->
     <div id="auth-screen">
         <!-- Giriş Paneli -->
         <div class="auth-box" id="login-box">
-            <h1>Lotus AI 🪷</h1>
-            <p>Yapay zeka ameliyathanesine adım atın</p>
+            <div class="brand-mark">✨ Ouirelle</div>
+            <p>Yapay zeka atölyesine adım at</p>
             <div class="auth-error" id="login-error"></div>
             <input type="email" id="login-email" class="auth-input" placeholder="E-posta adresi" autocomplete="email">
             <input type="password" id="login-password" class="auth-input" placeholder="Şifre">
             <button class="auth-btn" id="login-btn" onclick="handleLogin()">Giriş Yap</button>
-            <button class="auth-switch" onclick="toggleAuthMode('register')">Hesabınız yok mu? Kayıt Olun</button>
+            <button class="auth-switch" onclick="toggleAuthMode('register')">Hesabın yok mu? Kayıt Ol</button>
         </div>
 
         <!-- Kayıt Paneli -->
         <div class="auth-box" id="register-box" style="display: none;">
-            <h1>Lotus AI 🪷</h1>
-            <p>Yeni bir Lotus zihni oluşturun</p>
+            <div class="brand-mark">✨ Ouirelle</div>
+            <p>Yeni bir Ouirelle zihni oluştur</p>
             <div class="auth-error" id="register-error"></div>
             <input type="text" id="reg-name" class="auth-input" placeholder="Ad Soyad" autocomplete="name">
             <input type="email" id="reg-email" class="auth-input" placeholder="E-posta adresi" autocomplete="email">
             <input type="password" id="reg-password" class="auth-input" placeholder="Güçlü bir şifre">
             <button class="auth-btn" id="register-btn" onclick="handleRegister()">Kayıt Ol</button>
-            <button class="auth-switch" onclick="toggleAuthMode('login')">Zaten hesabınız var mı? Giriş Yapın</button>
+            <button class="auth-switch" onclick="toggleAuthMode('login')">Zaten hesabın var mı? Giriş Yap</button>
         </div>
     </div>
 
     <!-- ANA UYGULAMA ARAYÜZÜ -->
     <div class="sidebar">
+        <div class="sidebar-brand"><span class="brand-mark">✨ Ouirelle</span></div>
         <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Sohbet</button>
         <ul class="chat-history" id="chat-history"></ul>
-        
-        <!-- ChatGPT Tarzı Alt Profil Alanı -->
+
+        <!-- Alt Profil Alanı -->
         <div class="user-profile">
             <div class="user-info">
-                <span>🪷</span>
+                <span>✨</span>
                 <span id="user-display-name">Yükleniyor...</span>
             </div>
             <button class="logout-btn" onclick="handleLogout()">Çıkış Yap</button>
@@ -360,23 +426,23 @@
     </div>
 
     <div class="main-content">
-        <div class="header">Lotus AI 🪷</div>
-        
+        <div class="header"><span class="brand-mark">✨ Ouirelle</span></div>
+
         <div class="chat-container" id="chat-container">
-            <div class="message-bubble lotus-message">
-                <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+            <div class="message-bubble ouirelle-message">
+                <strong>Ouirelle:</strong> Merhaba, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
             </div>
         </div>
 
         <div class="input-container">
-            <input type="text" id="user-input" class="input-box" placeholder="Lotus'a bir mesaj gönder..." autocomplete="off">
+            <input type="text" id="user-input" class="input-box" placeholder="Ouirelle'e bir mesaj gönder..." autocomplete="off">
             <button id="send-btn" class="send-btn" onclick="sendMessage()">Gönder</button>
         </div>
     </div>
 
     <script>
         // DİKKAT: Buraya kendi güncel Ngrok linkini yazmalısın!
-        const API_BASE_URL = "https://landlord-rekindle-wispy.ngrok-free.dev"; 
+        const API_BASE_URL = "https://landlord-rekindle-wispy.ngrok-free.dev";
 
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
@@ -388,8 +454,8 @@
         const userDisplayName = document.getElementById('user-display-name');
 
         // --- SOHBET STATE YÖNETİMİ ---
-        let currentChatId = null; 
-        let isNewChat = true; 
+        let currentChatId = null;
+        let isNewChat = true;
 
         // Enter tuşu dinleyicisi
         userInput.addEventListener("keypress", function(event) {
@@ -401,9 +467,9 @@
 
         // --- SAYFA YÜKLENDİĞİNDE AUTH KONTROLÜ ---
         document.addEventListener("DOMContentLoaded", () => {
-            const token = localStorage.getItem("lotus_token");
-            const name = localStorage.getItem("lotus_user_name");
-            
+            const token = localStorage.getItem("ouirelle_token");
+            const name = localStorage.getItem("ouirelle_user_name");
+
             if (token) {
                 authScreen.style.opacity = '0';
                 authScreen.style.visibility = 'hidden';
@@ -442,14 +508,14 @@
             try {
                 loginBtn.disabled = true;
                 loginBtn.textContent = "Giriş Yapılıyor...";
-                
+
                 const formData = new URLSearchParams();
                 formData.append('username', email);
                 formData.append('password', password);
 
                 const response = await fetch(`${API_BASE_URL}/token`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     },
@@ -462,8 +528,8 @@
                     throw new Error(data.detail || "Giriş başarısız oldu.");
                 }
 
-                localStorage.setItem("lotus_token", data.access_token);
-                localStorage.setItem("lotus_user_name", data.user_name);
+                localStorage.setItem("ouirelle_token", data.access_token);
+                localStorage.setItem("ouirelle_user_name", data.user_name);
                 userDisplayName.textContent = data.user_name;
 
                 authScreen.style.opacity = '0';
@@ -501,7 +567,7 @@
 
                 const response = await fetch(`${API_BASE_URL}/register`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     },
@@ -514,7 +580,7 @@
                     throw new Error(data.detail || "Kayıt işlemi başarısız.");
                 }
 
-                alert("Hesabınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.");
+                alert("Hesabın başarıyla oluşturuldu! Şimdi giriş yapabilirsin.");
                 toggleAuthMode('login');
                 document.getElementById('login-email').value = email;
 
@@ -534,8 +600,8 @@
             isNewChat = true;
             chatHistory.innerHTML = "";
             chatContainer.innerHTML = `
-                <div class="message-bubble lotus-message">
-                    <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+                <div class="message-bubble ouirelle-message">
+                    <strong>Ouirelle:</strong> Merhaba, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
                 </div>
             `;
             authScreen.style.visibility = 'visible';
@@ -545,12 +611,12 @@
 
         // --- MONGODB'DEN SOHBET GEÇMİŞİNİ YÜKLEME ---
         async function loadUserChatHistory() {
-            const token = localStorage.getItem("lotus_token");
+            const token = localStorage.getItem("ouirelle_token");
             if (!token) return;
 
             try {
                 const response = await fetch(`${API_BASE_URL}/chats`, {
-                    headers: { 
+                    headers: {
                         'Authorization': `Bearer ${token}`,
                         'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     }
@@ -574,14 +640,14 @@
 
         // --- BELİRLİ BİR SOHBETİN DETAYLARINI EKRANA BASMA ---
         async function loadSpecificChat(chatId, liElement) {
-            const token = localStorage.getItem("lotus_token");
+            const token = localStorage.getItem("ouirelle_token");
             if (!token) return;
 
             try {
                 chatContainer.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.6;'>Sohbet yükleniyor...</div>";
-                
+
                 const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
-                    headers: { 
+                    headers: {
                         'Authorization': `Bearer ${token}`,
                         'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     }
@@ -600,7 +666,7 @@
                     if (msg.role === "user") {
                         addMessage("Sen", msg.content, "user-message");
                     } else {
-                        addMessage("Lotus", msg.content.replace(/\n/g, '<br>'), "lotus-message");
+                        addMessage("Ouirelle", msg.content.replace(/\n/g, '<br>'), "ouirelle-message");
                     }
                 });
 
@@ -613,8 +679,8 @@
 
         function startNewChat() {
             chatContainer.innerHTML = `
-                <div class="message-bubble lotus-message">
-                    <strong>Lotus:</strong> Merhaba, ben Lotus. 🪷<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
+                <div class="message-bubble ouirelle-message">
+                    <strong>Ouirelle:</strong> Merhaba, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
                 </div>
             `;
             isNewChat = true;
@@ -627,7 +693,7 @@
         // --- MESAJA CEVAP VERME VE STREAM ALANI ---
         async function sendMessage() {
             const text = userInput.value.trim();
-            const token = localStorage.getItem("lotus_token");
+            const token = localStorage.getItem("ouirelle_token");
 
             if (!text) return;
             if (!token) {
@@ -637,7 +703,7 @@
 
             let temporaryLi = null;
             if (isNewChat) {
-                chatContainer.innerHTML = ""; 
+                chatContainer.innerHTML = "";
                 const title = text.split(" ").slice(0, 4).join(" ") + "...";
                 temporaryLi = document.createElement("li");
                 temporaryLi.textContent = title;
@@ -650,18 +716,18 @@
             sendBtn.disabled = true;
             sendBtn.textContent = "Düşünüyor...";
 
-            const responseContainer = addMessage("Lotus", "<span class='blinking-cursor'></span>", "lotus-message");
+            const responseContainer = addMessage("Ouirelle", "<span class='blinking-cursor'></span>", "ouirelle-message");
             const textNode = responseContainer.querySelector('.message-content');
 
             try {
                 const response = await fetch(`${API_BASE_URL}/chat`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                         'ngrok-skip-browser-warning': 'true' // Ngrok uyarısını atlar
                     },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         message: text,
                         chat_id: currentChatId
                     })
@@ -679,14 +745,14 @@
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
-                textNode.innerHTML = ""; 
+                textNode.innerHTML = "";
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    
+
                     const chunk = decoder.decode(value, { stream: true });
-                    textNode.innerHTML += chunk.replace(/\n/g, '<br>'); 
+                    textNode.innerHTML += chunk.replace(/\n/g, '<br>');
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
             } catch (error) {
