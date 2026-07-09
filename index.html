@@ -38,8 +38,10 @@
             background-color: var(--bg);
             display: flex;
             height: 100vh;
+            height: 100dvh;
             color: var(--ink);
             overflow: hidden;
+            -webkit-text-size-adjust: 100%;
         }
 
         button { font-family: inherit; }
@@ -161,6 +163,8 @@
             flex-direction: column;
             gap: 18px;
             height: 100%;
+            flex-shrink: 0;
+            transition: transform 0.28s ease;
         }
 
         .sidebar-brand {
@@ -170,7 +174,35 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            justify-content: space-between;
         }
+
+        /* Sadece mobilde görünen kapatma butonu */
+        .sidebar-close {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--ink-soft);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 8px;
+        }
+        .sidebar-close:hover { background: var(--primary-soft); color: var(--ink); }
+
+        /* Çekmece açıkken arka planı karartan örtü */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(45, 35, 15, 0.38);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 0.28s ease;
+        }
+        .sidebar-overlay.show { opacity: 1; }
 
         .new-chat-btn {
             background-color: var(--surface);
@@ -266,8 +298,11 @@
 
         .header {
             width: 100%;
-            text-align: center;
-            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 16px;
+            padding-top: max(14px, env(safe-area-inset-top));
             font-size: 20px;
             position: sticky;
             top: 0;
@@ -277,6 +312,27 @@
             z-index: 10;
         }
         .header .brand-mark { font-size: 22px; }
+
+        /* Hamburger menü butonu — yalnızca mobilde görünür */
+        .menu-btn {
+            display: none;
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 12px;
+            font-size: 18px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-deep);
+            box-shadow: var(--shadow);
+        }
+        .menu-btn:active { transform: translateY(-50%) scale(0.94); }
 
         .chat-container {
             width: 100%;
@@ -376,8 +432,59 @@
         }
         @keyframes blink { 50% { opacity: 0; } }
 
-        @media (max-width: 720px) {
-            .sidebar { width: 220px; }
+        /* ---------- MOBİL ---------- */
+        @media (max-width: 768px) {
+            .main-content { min-width: 0; width: 100%; }
+
+            .menu-btn { display: flex; }
+            .sidebar-close { display: block; }
+
+            /* Kenar çubuğu kayan çekmece olur */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 82vw;
+                max-width: 320px;
+                z-index: 50;
+                transform: translateX(-100%);
+                box-shadow: var(--shadow-lg);
+                padding-top: max(18px, env(safe-area-inset-top));
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; }
+
+            .chat-container {
+                padding: 16px 14px;
+                gap: 14px;
+            }
+            .message-bubble {
+                max-width: 92%;
+                padding: 15px 16px;
+                font-size: 15px;
+            }
+
+            .input-container {
+                padding: 10px 12px;
+                padding-bottom: max(14px, env(safe-area-inset-bottom));
+                gap: 8px;
+            }
+            .input-box {
+                padding: 13px 18px;
+                font-size: 16px; /* iOS'ta otomatik yakınlaştırmayı engeller */
+            }
+            .send-btn { padding: 0 20px; }
+
+            .auth-box { padding: 32px 22px; }
+        }
+
+        @media (max-width: 380px) {
+            .send-btn {
+                padding: 0 16px;
+                font-size: 14px;
+            }
+            .header .brand-mark { font-size: 20px; }
         }
     </style>
 </head>
@@ -410,8 +517,13 @@
     </div>
 
     <!-- ANA UYGULAMA ARAYÜZÜ -->
-    <div class="sidebar">
-        <div class="sidebar-brand"><span class="brand-mark">✨ Ouirelle</span></div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-mark">✨ Ouirelle</span>
+            <button class="sidebar-close" onclick="closeSidebar()" aria-label="Menüyü kapat">✕</button>
+        </div>
         <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Sohbet</button>
         <ul class="chat-history" id="chat-history"></ul>
 
@@ -426,7 +538,10 @@
     </div>
 
     <div class="main-content">
-        <div class="header"><span class="brand-mark">✨ Ouirelle</span></div>
+        <div class="header">
+            <button class="menu-btn" onclick="openSidebar()" aria-label="Menüyü aç">☰</button>
+            <span class="brand-mark">✨ Ouirelle</span>
+        </div>
 
         <div class="chat-container" id="chat-container">
             <div class="message-bubble ouirelle-message">
@@ -452,10 +567,26 @@
         const loginBox = document.getElementById('login-box');
         const registerBox = document.getElementById('register-box');
         const userDisplayName = document.getElementById('user-display-name');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
 
         // --- SOHBET STATE YÖNETİMİ ---
         let currentChatId = null;
         let isNewChat = true;
+
+        // --- MOBİL KENAR ÇUBUĞU (ÇEKMECE) ---
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('show');
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('show');
+        }
+        // Küçük ekranlarda çekmece açıkken bir öğe seçilince otomatik kapansın
+        function closeSidebarOnMobile() {
+            if (window.matchMedia('(max-width: 768px)').matches) closeSidebar();
+        }
 
         // Enter tuşu dinleyicisi
         userInput.addEventListener("keypress", function(event) {
@@ -463,6 +594,15 @@
                 event.preventDefault();
                 sendMessage();
             }
+        });
+
+        // Escape ile çekmeceyi kapat
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeSidebar();
+        });
+        // Masaüstü genişliğine geçilince çekmece durumunu temizle
+        window.addEventListener("resize", () => {
+            if (!window.matchMedia('(max-width: 768px)').matches) closeSidebar();
         });
 
         // --- SAYFA YÜKLENDİĞİNDE AUTH KONTROLÜ ---
@@ -661,6 +801,7 @@
 
                 document.querySelectorAll('.chat-history li').forEach(li => li.classList.remove('active'));
                 if (liElement) liElement.classList.add('active');
+                closeSidebarOnMobile();
 
                 data.messages.forEach(msg => {
                     if (msg.role === "user") {
@@ -687,6 +828,7 @@
             currentChatId = null;
             userInput.value = "";
             document.querySelectorAll('.chat-history li').forEach(li => li.classList.remove('active'));
+            closeSidebarOnMobile();
             userInput.focus();
         }
 
