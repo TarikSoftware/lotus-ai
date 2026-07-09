@@ -6,7 +6,7 @@
     <title>Ouirelle AI 0.1a</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Poppins:wght@400;500;600&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             /* Yumuşak Altın & Berrak Beyaz paleti */
@@ -22,10 +22,38 @@
             --ouirelle-text: #A8823D;  /* asistan ismi rengi */
             --user-text:     #6B5A34;  /* kullanıcı ismi rengi */
             --danger:        #C0563C;
+            --header-bg:     rgba(250, 246, 236, 0.85);
+            --app-font:      'Inter', 'Segoe UI', system-ui, sans-serif;
             --radius:        16px;
             --shadow:        0 4px 20px rgba(120, 95, 40, 0.08);
             --shadow-lg:     0 18px 55px rgba(90, 65, 20, 0.18);
         }
+
+        /* --- KOYU TEMA --- */
+        html[data-theme="dark"] {
+            --bg:            #1C1A17;
+            --surface:       #26231E;
+            --sidebar-bg:    #201D19;
+            --ink:           #EDE6D6;
+            --ink-soft:      #A99C7E;
+            --line:          #37322A;
+            --primary:       #D4B26A;
+            --primary-deep:  #E6C878;
+            --primary-soft:  #2E2A22;
+            --ouirelle-text: #E6C878;
+            --user-text:     #D4B26A;
+            --danger:        #E0745A;
+            --header-bg:     rgba(28, 26, 23, 0.85);
+            --shadow:        0 4px 20px rgba(0, 0, 0, 0.35);
+            --shadow-lg:     0 18px 55px rgba(0, 0, 0, 0.55);
+        }
+        html[data-theme="dark"] #auth-screen {
+            background:
+                radial-gradient(900px 560px at 18% 8%, #3A3016 0%, transparent 55%),
+                radial-gradient(820px 560px at 86% 92%, #2E2712 0%, transparent 52%),
+                #1C1A17;
+        }
+        html[data-theme="dark"] .auth-error { background-color: #3A241E; }
 
         * {
             box-sizing: border-box;
@@ -34,7 +62,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-family: var(--app-font);
             background-color: var(--bg);
             display: flex;
             height: 100vh;
@@ -306,7 +334,7 @@
             font-size: 20px;
             position: sticky;
             top: 0;
-            background: rgba(250, 246, 236, 0.85);
+            background: var(--header-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--line);
             z-index: 10;
@@ -365,6 +393,10 @@
             align-self: flex-end;
             background-color: var(--primary-soft);
         }
+
+        /* Sıkışık mesaj yoğunluğu */
+        html[data-density="sik"] .message-bubble { padding: 12px 15px; font-size: 14px; }
+        html[data-density="sik"] .chat-container { gap: 10px; }
 
         .user-message strong { color: var(--user-text); }
         .ouirelle-message strong { color: var(--ouirelle-text); }
@@ -431,6 +463,165 @@
             color: var(--primary);
         }
         @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- SOHBET LİSTESİ ÖĞESİ + SİLME --- */
+        .chat-item { display: flex; align-items: center; gap: 6px; }
+        .chat-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .chat-del-btn {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: var(--ink-soft);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            padding: 4px 6px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity .15s, background .15s, color .15s;
+        }
+        .chat-item:hover .chat-del-btn { opacity: 1; }
+        .chat-del-btn:hover { background: rgba(0,0,0,0.08); color: var(--danger); }
+        .chat-history li.active .chat-del-btn { color: rgba(255,255,255,0.85); opacity: 1; }
+        .chat-history li.active .chat-del-btn:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+        /* --- ALT ARAÇ BUTONU (Ayarlar) --- */
+        .sidebar-tool-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            background: none;
+            border: 1px solid transparent;
+            color: var(--ink-soft);
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, color .2s;
+            text-align: left;
+        }
+        .sidebar-tool-btn:hover { background: var(--primary-soft); color: var(--ink); }
+
+        /* --- AYARLAR MODALI --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 22, 8, 0.45);
+            backdrop-filter: blur(3px);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .settings-modal {
+            width: 100%;
+            max-width: 460px;
+            max-height: 88vh;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .settings-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+        .settings-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 17px; }
+        .settings-close {
+            background: none; border: none; font-size: 18px; cursor: pointer;
+            color: var(--ink-soft); padding: 4px 8px; border-radius: 8px;
+        }
+        .settings-close:hover { background: var(--primary-soft); color: var(--ink); }
+
+        .settings-tabs {
+            display: flex; gap: 4px;
+            padding: 10px 14px 0;
+            border-bottom: 1px solid var(--line);
+        }
+        .stab {
+            background: none; border: none; cursor: pointer;
+            padding: 10px 12px; font-size: 14px; font-weight: 600;
+            color: var(--ink-soft);
+            border-bottom: 2px solid transparent;
+            border-radius: 8px 8px 0 0;
+        }
+        .stab:hover { color: var(--ink); }
+        .stab.active { color: var(--primary-deep); border-bottom-color: var(--primary); }
+
+        .settings-body { padding: 18px 20px; overflow-y: auto; }
+        .srow {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 18px;
+        }
+        .srow:last-child { margin-bottom: 0; }
+        .srow.col { flex-direction: column; align-items: stretch; }
+        .srow.col .slabel { margin-bottom: 8px; }
+        .slabel { font-size: 14px; font-weight: 600; color: var(--ink); }
+
+        .seg { display: flex; background: var(--primary-soft); border-radius: 10px; padding: 3px; gap: 2px; }
+        .seg button {
+            background: none; border: none; cursor: pointer;
+            padding: 7px 11px; font-size: 13px; font-weight: 600;
+            color: var(--ink-soft); border-radius: 8px; white-space: nowrap;
+        }
+        .seg button.sel { background: var(--surface); color: var(--primary-deep); box-shadow: var(--shadow); }
+
+        .swatches { display: flex; gap: 8px; }
+        .swatch {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--sw); border: 2px solid var(--surface);
+            cursor: pointer; padding: 0;
+            outline: 2px solid transparent; outline-offset: 2px;
+            transition: outline-color .15s;
+        }
+        .swatch.sel { outline-color: var(--sw); }
+
+        .sselect, .sinput {
+            background: var(--surface); border: 1px solid var(--line);
+            border-radius: 10px; padding: 9px 12px; font-size: 14px;
+            color: var(--ink); outline: none;
+        }
+        .sselect { cursor: pointer; }
+        .sinput { width: 100%; }
+        .sselect:focus, .sinput:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft);
+        }
+        .shint { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+
+        .usage-loading { text-align: center; color: var(--ink-soft); padding: 24px 4px; font-size: 14px; line-height: 1.5; }
+        .usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ucard {
+            background: var(--primary-soft); border: 1px solid var(--line);
+            border-radius: 14px; padding: 14px; text-align: center;
+        }
+        .ucard.wide { grid-column: 1 / -1; }
+        .unum { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 24px; color: var(--primary-deep); }
+        .unum.small { font-size: 18px; }
+        .ulbl { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+        /* Dokunmatik cihazlarda silme butonu her zaman görünür */
+        @media (hover: none) {
+            .chat-del-btn { opacity: 1; }
+        }
+        @media (max-width: 768px) {
+            .seg button { padding: 7px 9px; font-size: 12px; }
+        }
 
         /* ---------- MOBİL ---------- */
         @media (max-width: 768px) {
@@ -527,6 +718,11 @@
         <button class="new-chat-btn" onclick="startNewChat()">+ Yeni Sohbet</button>
         <ul class="chat-history" id="chat-history"></ul>
 
+        <!-- Ayarlar sekmesi -->
+        <button class="sidebar-tool-btn" onclick="openSettings()">
+            <span>⚙</span><span>Ayarlar</span>
+        </button>
+
         <!-- Alt Profil Alanı -->
         <div class="user-profile">
             <div class="user-info">
@@ -552,6 +748,78 @@
         <div class="input-container">
             <input type="text" id="user-input" class="input-box" placeholder="Ouirelle'e bir mesaj gönder..." autocomplete="off">
             <button id="send-btn" class="send-btn" onclick="sendMessage()">Gönder</button>
+        </div>
+    </div>
+
+    <!-- AYARLAR MODALI -->
+    <div class="modal-overlay" id="settings-overlay">
+        <div class="settings-modal">
+            <div class="settings-head">
+                <span class="settings-title">⚙ Ayarlar</span>
+                <button class="settings-close" onclick="closeSettings()" aria-label="Kapat">✕</button>
+            </div>
+
+            <div class="settings-tabs">
+                <button class="stab active" data-tab="gorunum" onclick="switchSettingsTab('gorunum')">Görünüm</button>
+                <button class="stab" data-tab="kullanim" onclick="switchSettingsTab('kullanim')">Kullanım</button>
+                <button class="stab" data-tab="kisisel" onclick="switchSettingsTab('kisisel')">Kişiselleştirme</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- GÖRÜNÜM -->
+                <div class="spanel" data-panel="gorunum">
+                    <div class="srow">
+                        <div class="slabel">Tema</div>
+                        <div class="seg">
+                            <button data-theme-opt="light" onclick="setTheme('light')">☀ Açık</button>
+                            <button data-theme-opt="dark" onclick="setTheme('dark')">🌙 Koyu</button>
+                            <button data-theme-opt="system" onclick="setTheme('system')">🖥 Sistem</button>
+                        </div>
+                    </div>
+                    <div class="srow">
+                        <div class="slabel">Vurgu rengi</div>
+                        <div class="swatches">
+                            <button class="swatch" data-accent-opt="altin"   style="--sw:#C6A15B" onclick="setAccent('altin')"   title="Altın"></button>
+                            <button class="swatch" data-accent-opt="gul"     style="--sw:#C67B8E" onclick="setAccent('gul')"     title="Gül"></button>
+                            <button class="swatch" data-accent-opt="adacayi" style="--sw:#8AA57E" onclick="setAccent('adacayi')" title="Adaçayı"></button>
+                            <button class="swatch" data-accent-opt="lavanta" style="--sw:#9B8BC4" onclick="setAccent('lavanta')" title="Lavanta"></button>
+                            <button class="swatch" data-accent-opt="gok"     style="--sw:#6FA0C6" onclick="setAccent('gok')"     title="Gökyüzü"></button>
+                        </div>
+                    </div>
+                    <div class="srow">
+                        <div class="slabel">Yazı tipi</div>
+                        <select id="font-select" class="sselect" onchange="onFontChange(this.value)">
+                            <option value="inter">Inter (varsayılan)</option>
+                            <option value="nunito">Nunito</option>
+                            <option value="poppins">Poppins</option>
+                            <option value="lora">Lora (serif)</option>
+                            <option value="sistem">Sistem yazı tipi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KULLANIM -->
+                <div class="spanel" data-panel="kullanim" hidden>
+                    <div id="usage-body"><div class="usage-loading">Yükleniyor...</div></div>
+                </div>
+
+                <!-- KİŞİSELLEŞTİRME -->
+                <div class="spanel" data-panel="kisisel" hidden>
+                    <div class="srow col">
+                        <div class="slabel">Sana nasıl hitap edelim?</div>
+                        <input id="nickname-input" class="sinput" type="text" maxlength="30"
+                               placeholder="Örn. Tareque" oninput="onNicknameChange(this.value)">
+                        <div class="shint">Yeni sohbet açıldığında Ouirelle seni bu isimle karşılar.</div>
+                    </div>
+                    <div class="srow">
+                        <div class="slabel">Mesaj yoğunluğu</div>
+                        <div class="seg">
+                            <button data-density-opt="rahat" onclick="setDensity('rahat')">Rahat</button>
+                            <button data-density-opt="sik" onclick="setDensity('sik')">Sıkışık</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -588,6 +856,160 @@
             if (window.matchMedia('(max-width: 768px)').matches) closeSidebar();
         }
 
+        // ================= AYARLAR & KİŞİSELLEŞTİRME =================
+        const settingsOverlay = document.getElementById('settings-overlay');
+
+        const ACCENTS = {
+            altin:   { primary:'#C6A15B', deep:'#A8823D', soft:'#F6EFDD', softDark:'#2E2A22' },
+            gul:     { primary:'#C67B8E', deep:'#A85870', soft:'#F7E9EE', softDark:'#2E2226' },
+            adacayi: { primary:'#8AA57E', deep:'#5F7E56', soft:'#EAF1E6', softDark:'#232A22' },
+            lavanta: { primary:'#9B8BC4', deep:'#7461A8', soft:'#EEEAF7', softDark:'#262230' },
+            gok:     { primary:'#6FA0C6', deep:'#487EA8', soft:'#E6EFF7', softDark:'#222830' },
+        };
+        const FONTS = {
+            inter:   "'Inter', 'Segoe UI', system-ui, sans-serif",
+            nunito:  "'Nunito', 'Segoe UI', sans-serif",
+            poppins: "'Poppins', 'Segoe UI', sans-serif",
+            lora:    "'Lora', Georgia, serif",
+            sistem:  "system-ui, -apple-system, 'Segoe UI', sans-serif",
+        };
+
+        function getSetting(key, def) { return localStorage.getItem(key) || def; }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c =>
+                ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+
+        function greetingHTML() {
+            const nick = (localStorage.getItem('ouirelle_nickname') || '').trim();
+            const hitap = nick ? `Merhaba ${escapeHtml(nick)}` : 'Merhaba';
+            return `<strong>Ouirelle:</strong> ${hitap}, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?`;
+        }
+
+        function applyTheme(theme) {
+            let eff = theme;
+            if (theme === 'system') {
+                eff = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', eff);
+            // primary-soft tema bağımlı olduğu için vurgu rengini yeniden uygula
+            applyAccent(getSetting('ouirelle_accent', 'altin'));
+        }
+
+        function applyAccent(name) {
+            const a = ACCENTS[name] || ACCENTS.altin;
+            const root = document.documentElement;
+            const isDark = root.getAttribute('data-theme') === 'dark';
+            root.style.setProperty('--primary', a.primary);
+            root.style.setProperty('--primary-deep', a.deep);
+            root.style.setProperty('--primary-soft', isDark ? a.softDark : a.soft);
+            root.style.setProperty('--ouirelle-text', a.deep);
+        }
+
+        function applyFont(name) {
+            document.documentElement.style.setProperty('--app-font', FONTS[name] || FONTS.inter);
+        }
+
+        function applyDensity(d) {
+            document.documentElement.setAttribute('data-density', d);
+        }
+
+        function loadSettings() {
+            applyTheme(getSetting('ouirelle_theme', 'light'));
+            applyAccent(getSetting('ouirelle_accent', 'altin'));
+            applyFont(getSetting('ouirelle_font', 'inter'));
+            applyDensity(getSetting('ouirelle_density', 'rahat'));
+        }
+
+        // 'Sistem' modundayken işletim sistemi teması değişirse yansıt
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (getSetting('ouirelle_theme', 'light') === 'system') applyTheme('system');
+        });
+
+        function syncSettingsUI() {
+            const theme = getSetting('ouirelle_theme', 'light');
+            document.querySelectorAll('[data-theme-opt]').forEach(b =>
+                b.classList.toggle('sel', b.dataset.themeOpt === theme));
+
+            const accent = getSetting('ouirelle_accent', 'altin');
+            document.querySelectorAll('[data-accent-opt]').forEach(b =>
+                b.classList.toggle('sel', b.dataset.accentOpt === accent));
+
+            const density = getSetting('ouirelle_density', 'rahat');
+            document.querySelectorAll('[data-density-opt]').forEach(b =>
+                b.classList.toggle('sel', b.dataset.densityOpt === density));
+
+            const fontSel = document.getElementById('font-select');
+            if (fontSel) fontSel.value = getSetting('ouirelle_font', 'inter');
+
+            const nickIn = document.getElementById('nickname-input');
+            if (nickIn) nickIn.value = localStorage.getItem('ouirelle_nickname') || '';
+        }
+
+        function openSettings() {
+            settingsOverlay.classList.add('show');
+            switchSettingsTab('gorunum');
+            syncSettingsUI();
+            closeSidebarOnMobile();
+        }
+        function closeSettings() { settingsOverlay.classList.remove('show'); }
+
+        function switchSettingsTab(tab) {
+            document.querySelectorAll('.stab').forEach(b =>
+                b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.spanel').forEach(p =>
+                p.hidden = (p.dataset.panel !== tab));
+            if (tab === 'kullanim') loadUsage();
+        }
+
+        function setTheme(t)   { localStorage.setItem('ouirelle_theme', t);   applyTheme(t);   syncSettingsUI(); }
+        function setAccent(a)  { localStorage.setItem('ouirelle_accent', a);  applyAccent(a);  syncSettingsUI(); }
+        function setDensity(d) { localStorage.setItem('ouirelle_density', d); applyDensity(d); syncSettingsUI(); }
+        function onFontChange(v) { localStorage.setItem('ouirelle_font', v); applyFont(v); }
+        function onNicknameChange(v) {
+            const val = v.trim();
+            if (val) localStorage.setItem('ouirelle_nickname', val);
+            else localStorage.removeItem('ouirelle_nickname');
+        }
+
+        async function loadUsage() {
+            const box = document.getElementById('usage-body');
+            if (!box) return;
+            const token = localStorage.getItem('ouirelle_token');
+            box.innerHTML = "<div class='usage-loading'>Yükleniyor...</div>";
+            if (!token) { box.innerHTML = "<div class='usage-loading'>Bu bilgiyi görmek için giriş yapmalısın.</div>"; return; }
+
+            try {
+                const r = await fetch(`${API_BASE_URL}/usage`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' }
+                });
+                if (!r.ok) throw new Error();
+                const d = await r.json();
+                const tarih = d.uye_tarihi ? new Date(d.uye_tarihi).toLocaleDateString('tr-TR') : '—';
+                const kchar = (d.toplam_karakter || 0).toLocaleString('tr-TR');
+                box.innerHTML = `
+                    <div class="usage-grid">
+                        <div class="ucard"><div class="unum">${d.sohbet_sayisi ?? 0}</div><div class="ulbl">Sohbet</div></div>
+                        <div class="ucard"><div class="unum">${d.toplam_mesaj ?? 0}</div><div class="ulbl">Toplam mesaj</div></div>
+                        <div class="ucard"><div class="unum">${d.kullanici_mesaj ?? 0}</div><div class="ulbl">Senin mesajın</div></div>
+                        <div class="ucard"><div class="unum">${d.lotus_mesaj ?? 0}</div><div class="ulbl">Ouirelle yanıtı</div></div>
+                        <div class="ucard wide"><div class="unum">${kchar}</div><div class="ulbl">Toplam karakter</div></div>
+                        <div class="ucard wide"><div class="unum small">${tarih}</div><div class="ulbl">Üyelik tarihi</div></div>
+                    </div>`;
+            } catch (e) {
+                box.innerHTML = "<div class='usage-loading'>Kullanım verisi alınamadı.<br>Backend'in güncel sürümü çalışıyor mu?</div>";
+            }
+        }
+
+        // Arka plana tıklayınca / Escape ile kapat
+        settingsOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsOverlay) closeSettings();
+        });
+
+        // Tema/font/yoğunluğu sayfa açılır açılmaz uygula (yanıp sönmeyi engeller)
+        loadSettings();
+
         // Enter tuşu dinleyicisi
         userInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
@@ -598,7 +1020,7 @@
 
         // Escape ile çekmeceyi kapat
         document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") closeSidebar();
+            if (e.key === "Escape") { closeSidebar(); closeSettings(); }
         });
         // Masaüstü genişliğine geçilince çekmece durumunu temizle
         window.addEventListener("resize", () => {
@@ -614,6 +1036,7 @@
                 authScreen.style.opacity = '0';
                 authScreen.style.visibility = 'hidden';
                 userDisplayName.textContent = name || "Kullanıcı";
+                chatContainer.innerHTML = `<div class="message-bubble ouirelle-message">${greetingHTML()}</div>`;
                 loadUserChatHistory();
             } else {
                 userDisplayName.textContent = "Giriş Yapılmadı";
@@ -739,11 +1162,7 @@
             currentChatId = null;
             isNewChat = true;
             chatHistory.innerHTML = "";
-            chatContainer.innerHTML = `
-                <div class="message-bubble ouirelle-message">
-                    <strong>Ouirelle:</strong> Merhaba, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
-                </div>
-            `;
+            chatContainer.innerHTML = `<div class="message-bubble ouirelle-message">${greetingHTML()}</div>`;
             authScreen.style.visibility = 'visible';
             authScreen.style.opacity = '1';
             document.getElementById('login-password').value = "";
@@ -767,14 +1186,69 @@
                 chatHistory.innerHTML = "";
 
                 chats.forEach(chat => {
-                    const li = document.createElement("li");
-                    li.textContent = chat.title || "Eski Sohbet";
-                    li.id = `sidebar-chat-${chat.id}`;
-                    li.onclick = () => loadSpecificChat(chat.id, li);
-                    chatHistory.appendChild(li);
+                    chatHistory.appendChild(createChatListItem(chat.id, chat.title));
                 });
             } catch (e) {
                 console.error("Geçmiş yüklenirken hata oluştu:", e);
+            }
+        }
+
+        // --- SOHBET LİSTESİ ÖĞESİ OLUŞTURMA (başlık + silme) ---
+        function createChatListItem(id, title) {
+            const li = document.createElement("li");
+            li.className = "chat-item";
+            if (id) {
+                li.id = `sidebar-chat-${id}`;
+                li.dataset.chatId = id;
+            }
+
+            const titleSpan = document.createElement("span");
+            titleSpan.className = "chat-title";
+            titleSpan.textContent = title || "Eski Sohbet";
+            li.appendChild(titleSpan);
+
+            const delBtn = document.createElement("button");
+            delBtn.className = "chat-del-btn";
+            delBtn.title = "Sohbeti sil";
+            delBtn.setAttribute("aria-label", "Sohbeti sil");
+            delBtn.textContent = "🗑";
+            li.appendChild(delBtn);
+
+            li.addEventListener("click", (e) => {
+                if (e.target === delBtn) return;
+                const cid = li.dataset.chatId;
+                if (cid) loadSpecificChat(cid, li);
+            });
+            delBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const cid = li.dataset.chatId;
+                if (cid) deleteChat(cid, li);
+            });
+
+            return li;
+        }
+
+        // --- SOHBET SİLME ---
+        async function deleteChat(chatId, liElement) {
+            const token = localStorage.getItem("ouirelle_token");
+            if (!token) return;
+            if (!confirm("Bu sohbeti silmek istediğine emin misin? Bu işlem geri alınamaz.")) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+                if (!response.ok) throw new Error();
+
+                liElement.remove();
+                // Açık olan sohbet silindiyse temiz bir ekrana dön
+                if (currentChatId === chatId) startNewChat();
+            } catch (e) {
+                alert("Sohbet silinemedi. Lütfen tekrar dene.");
             }
         }
 
@@ -819,11 +1293,7 @@
         }
 
         function startNewChat() {
-            chatContainer.innerHTML = `
-                <div class="message-bubble ouirelle-message">
-                    <strong>Ouirelle:</strong> Merhaba, ben Ouirelle. ✨<br><br>Hoş geldin. Bugün ne geliştirmek veya tasarlamak istersin?
-                </div>
-            `;
+            chatContainer.innerHTML = `<div class="message-bubble ouirelle-message">${greetingHTML()}</div>`;
             isNewChat = true;
             currentChatId = null;
             userInput.value = "";
@@ -847,8 +1317,7 @@
             if (isNewChat) {
                 chatContainer.innerHTML = "";
                 const title = text.split(" ").slice(0, 4).join(" ") + "...";
-                temporaryLi = document.createElement("li");
-                temporaryLi.textContent = title;
+                temporaryLi = createChatListItem(null, title);
                 temporaryLi.classList.add('active');
                 chatHistory.prepend(temporaryLi);
             }
@@ -882,7 +1351,7 @@
                     currentChatId = serverChatId;
                     isNewChat = false;
                     temporaryLi.id = `sidebar-chat-${serverChatId}`;
-                    temporaryLi.onclick = () => loadSpecificChat(serverChatId, temporaryLi);
+                    temporaryLi.dataset.chatId = serverChatId;
                 }
 
                 const reader = response.body.getReader();
